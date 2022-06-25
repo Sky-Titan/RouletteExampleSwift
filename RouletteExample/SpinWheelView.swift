@@ -126,13 +126,13 @@ class SpinWheelLayer: CALayer {
     fileprivate(set) var ringLineWidth: CGFloat = 0
     
     override func draw(in ctx: CGContext) {
-        initalizeLayer()
+        initializeLayer()
         setMask()
         setSlicesIfNeeded()
         setRingImageIfNeeded()
     }
     
-    private func initalizeLayer() {
+    private func initializeLayer() {
         self.contentsScale = UIScreen.main.scale
         
         removeAllAnimations()
