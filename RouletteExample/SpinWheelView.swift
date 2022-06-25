@@ -12,6 +12,7 @@ protocol SpinWheelViewDelegate: AnyObject {
     func spinWheelDidEnd(_ spinWheelView: SpinWheelView)
 }
 
+// MARK: SpinWheelView
 class SpinWheelView: UIView {
     override class var layerClass: AnyClass {
         return SpinWheelLayer.self
@@ -107,22 +108,19 @@ extension SpinWheelView: CAAnimationDelegate {
     }
 }
 
-
+// MARK: SpinWheel Layer
 class SpinWheelLayer: CALayer {
     fileprivate(set) var items: [SpinWheelItemModel] = []
     fileprivate(set) var ringImage: UIImage?
-    private(set) var slices: [SliceLayer] = []
     
     override func draw(in ctx: CGContext) {
         self.contentsScale = UIScreen.main.scale
         guard !items.isEmpty else { return }
         
         removeAllAnimations()
-        self.backgroundColor = UIColor.clear.cgColor
-        slices.forEach {
+        self.sublayers?.forEach({
             $0.removeFromSuperlayer()
-        }
-        slices = []
+        })
         
         let degreeOfSlice: Degree = 360 / CGFloat(items.count)
         
@@ -130,13 +128,23 @@ class SpinWheelLayer: CALayer {
         var startAngle: Degree = beginAngle
         var endAngle: Degree = startAngle + degreeOfSlice
         
+        // Add Slices
         for index in 0 ..< items.count {
-            let slice = SliceLayer(model: items[index], index: index, frame: self.bounds, radius: min(bounds.width / 2, bounds.height / 2), startAngle: startAngle, endAngle: endAngle)
+            let slice = SliceLayer(model: items[index], index: index, frame: self.bounds, radius: min(bounds.width / 2, bounds.height / 2), startAngle: startAngle, endAngle: endAngle, totalCount: items.count)
             startAngle += degreeOfSlice
             endAngle += degreeOfSlice
             slice.setNeedsDisplay()
-            addSublayer(slice)
-            slices.append(slice)
+            self.addSublayer(slice)
+        }
+        
+        // Add Ring Image
+        if let ringImage = ringImage {
+            let ringImageLayer = CALayer()
+            ringImageLayer.frame = self.bounds
+            ringImageLayer.contentsScale = self.contentsScale
+            ringImageLayer.contents = ringImage
+            ringImageLayer.setNeedsDisplay()
+            self.addSublayer(ringImageLayer)
         }
     }
 }
@@ -148,13 +156,15 @@ class SliceLayer: CALayer {
     let endAngle: Degree
     let radius: CGFloat
     let index: Int
+    let totalCount: Int
     
-    init(model: SpinWheelItemModel, index: Int, frame: CGRect, radius: CGFloat, startAngle: Degree, endAngle: Degree) {
+    init(model: SpinWheelItemModel, index: Int, frame: CGRect, radius: CGFloat, startAngle: Degree, endAngle: Degree, totalCount: Int) {
         self.model = model
         self.index = index
         self.startAngle = startAngle
         self.endAngle = endAngle
         self.radius = radius
+        self.totalCount = totalCount
         super.init()
         self.frame = frame
     }
@@ -166,11 +176,28 @@ class SliceLayer: CALayer {
     override func draw(in ctx: CGContext) {
         self.contentsScale = UIScreen.main.scale
         
+        // Draw Slice
         let center: CGPoint = CGPoint(x: frame.width / 2, y: frame.height / 2)
         ctx.move(to: center)
         ctx.addArc(center: center, radius: radius, startAngle: startAngle.toRadian(), endAngle: endAngle.toRadian(), clockwise: false)
         ctx.setFillColor(model.backgroundColor?.cgColor ?? UIColor.white.cgColor)
         ctx.fillPath()
+        
+        // Add text
+        let textLayer = CATextLayer()
+        textLayer.frame = CGRect(x: center.x, y: 0, width: frame.width / 2, height: 15)
+        textLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
+        textLayer.position = CGPoint(x: center.x, y: center.y)
+        
+        textLayer.foregroundColor = UIColor.white.cgColor
+        textLayer.string = model.text
+        textLayer.fontSize = 15
+        textLayer.alignmentMode = .center
+        addSublayer(textLayer)
+        
+        let degreeOfSlice: Degree = 360 / CGFloat(totalCount)
+        textLayer.transform = CATransform3DMakeAffineTransform(CGAffineTransform(rotationAngle: (endAngle - degreeOfSlice / 2).toRadian()))
+        
     }
 }
 

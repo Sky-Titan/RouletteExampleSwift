@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
+        spinWheelView.delegate = self
         spinWheelView.items = randomItems()
     }
 
@@ -28,11 +29,21 @@ class ViewController: UIViewController {
     @IBAction func spin(_ sender: Any) {
         spinWheelView.spinWheel(3)
     }
+    
     func randomItems() -> [SpinWheelItemModel] {
         let shuffledColor = colors.shuffled()
         return shuffledColor.compactMap({ color in
             SpinWheelItemModel(text: color.toText(), backgroundColor: color, value: 1000)
         })
+    }
+}
+extension ViewController: SpinWheelViewDelegate {
+    func spinWheelWillStart(_ spinWheelView: SpinWheelView) {
+        print("start")
+    }
+    
+    func spinWheelDidEnd(_ spinWheelView: SpinWheelView) {
+        print("stop")
     }
 }
 
