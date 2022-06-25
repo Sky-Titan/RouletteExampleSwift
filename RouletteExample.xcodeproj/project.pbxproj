@@ -100,12 +100,12 @@
 			isa = PBXGroup;
 			children = (
 				ABDB66CD2866BFC300075C9D /* AppDelegate.swift */,
+				ABDB66FF2866C04500075C9D /* SpinWheelView.swift */,
 				ABDB66D12866BFC300075C9D /* ViewController.swift */,
 				ABDB66FD2866C02F00075C9D /* ViewController.xib */,
 				ABDB66D62866BFC400075C9D /* Assets.xcassets */,
 				ABDB66D82866BFC400075C9D /* LaunchScreen.storyboard */,
 				ABDB66DB2866BFC400075C9D /* Info.plist */,
-				ABDB66FF2866C04500075C9D /* SpinWheelView.swift */,
 			);
 			path = RouletteExample;
 			sourceTree = "<group>";
