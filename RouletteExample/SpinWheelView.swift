@@ -9,7 +9,7 @@ import UIKit
 
 protocol SpinWheelViewDelegate: AnyObject {
     func spinWheelWillStart(_ spinWheelView: SpinWheelView)
-    func spinWheelDidEnd(_ spinWheelView: SpinWheelView)
+    func spinWheelDidEnd(_ spinWheelView: SpinWheelView, at item: SpinWheelItemModel)
 }
 
 // MARK: SpinWheelView
@@ -31,6 +31,16 @@ class SpinWheelView: UIView {
             spinWheelLayer?.setNeedsDisplay()
         }
     }
+    var ringLineWidth: CGFloat {
+        get {
+            spinWheelLayer?.ringLineWidth ?? 0
+        }
+        
+        set {
+            spinWheelLayer?.ringLineWidth = newValue
+            spinWheelLayer?.setNeedsDisplay()
+        }
+    }
     var items: [SpinWheelItemModel] {
         get {
             spinWheelLayer?.items ?? []
@@ -40,10 +50,12 @@ class SpinWheelView: UIView {
             spinWheelLayer?.setNeedsDisplay()
         }
     }
+    private var willEndIndex: Int?
     
     func spinWheel(_ index: Int) {
         guard !items.isEmpty else { return }
         delegate?.spinWheelWillStart(self)
+        willEndIndex = index
         spinWheelLayer?.add(spinAnimation(endIndex: index), forKey: "spin")
     }
     
@@ -95,15 +107,14 @@ class SpinWheelView: UIView {
         animation.isRemovedOnCompletion = false
         animation.beginTime = begin
         animation.fillMode = .forwards
-        
         return animation
     }
     
 }
 extension SpinWheelView: CAAnimationDelegate {
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-        if flag {
-            delegate?.spinWheelDidEnd(self)
+        if flag, let index = willEndIndex, items.count > index {
+            delegate?.spinWheelDidEnd(self, at: items[index])
         }
     }
 }
@@ -112,40 +123,63 @@ extension SpinWheelView: CAAnimationDelegate {
 class SpinWheelLayer: CALayer {
     fileprivate(set) var items: [SpinWheelItemModel] = []
     fileprivate(set) var ringImage: UIImage?
+    fileprivate(set) var ringLineWidth: CGFloat = 0
     
     override func draw(in ctx: CGContext) {
+        initalizeLayer()
+        setMask()
+        setSlicesIfNeeded()
+        setRingImageIfNeeded()
+    }
+    
+    private func initalizeLayer() {
         self.contentsScale = UIScreen.main.scale
-        guard !items.isEmpty else { return }
         
         removeAllAnimations()
         self.sublayers?.forEach({
             $0.removeFromSuperlayer()
         })
+
+    }
+    
+    private func setMask() {
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = UIBezierPath(arcCenter: CGPoint(x: bounds.width / 2, y: bounds.height / 2), radius: min(bounds.width / 2, bounds.height / 2), startAngle: 0, endAngle: .pi * 2, clockwise: false).cgPath
+        mask = maskLayer
         
+    }
+    
+    private func setSlicesIfNeeded() {
+        guard !items.isEmpty else { return }
         let degreeOfSlice: Degree = 360 / CGFloat(items.count)
         
         let beginAngle: Degree = (-90) - (degreeOfSlice / 2)
         var startAngle: Degree = beginAngle
         var endAngle: Degree = startAngle + degreeOfSlice
         
-        // Add Slices
         for index in 0 ..< items.count {
-            let slice = SliceLayer(model: items[index], index: index, frame: self.bounds, radius: min(bounds.width / 2, bounds.height / 2), startAngle: startAngle, endAngle: endAngle, totalCount: items.count)
+            let slice = SliceLayer(model: items[index], index: index, frame: bounds, radius: min(bounds.width / 2, bounds.height / 2), startAngle: startAngle, endAngle: endAngle, totalCount: items.count)
             startAngle += degreeOfSlice
             endAngle += degreeOfSlice
-            slice.setNeedsDisplay()
             self.addSublayer(slice)
+            slice.position = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
+            slice.setNeedsDisplay()
         }
+    }
+    
+    private func setRingImageIfNeeded() {
+        guard let ringImage = ringImage else {
+            return
+        }
+
+        let ringImageLayer = CALayer()
+        ringImageLayer.frame = CGRect(x: 0, y: 0, width: self.bounds.width - ringLineWidth, height: self.bounds.height - ringLineWidth)
+        ringImageLayer.contentsScale = self.contentsScale
+        ringImageLayer.contents = ringImage.cgImage
+        ringImageLayer.contentsGravity = .center
+        self.addSublayer(ringImageLayer)
         
-        // Add Ring Image
-        if let ringImage = ringImage {
-            let ringImageLayer = CALayer()
-            ringImageLayer.frame = self.bounds
-            ringImageLayer.contentsScale = self.contentsScale
-            ringImageLayer.contents = ringImage
-            ringImageLayer.setNeedsDisplay()
-            self.addSublayer(ringImageLayer)
-        }
+        ringImageLayer.position = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
     }
 }
 
@@ -175,15 +209,21 @@ class SliceLayer: CALayer {
     
     override func draw(in ctx: CGContext) {
         self.contentsScale = UIScreen.main.scale
-        
-        // Draw Slice
-        let center: CGPoint = CGPoint(x: frame.width / 2, y: frame.height / 2)
+        drawSlice(in: ctx)
+        addTextLayer()
+    }
+    
+    private func drawSlice(in ctx: CGContext) {
+        let center: CGPoint = self.position
         ctx.move(to: center)
         ctx.addArc(center: center, radius: radius, startAngle: startAngle.toRadian(), endAngle: endAngle.toRadian(), clockwise: false)
         ctx.setFillColor(model.backgroundColor?.cgColor ?? UIColor.white.cgColor)
         ctx.fillPath()
+    }
+    
+    private func addTextLayer() {
+        let center: CGPoint = self.position
         
-        // Add text
         let textLayer = CATextLayer()
         textLayer.frame = CGRect(x: center.x, y: 0, width: frame.width / 2, height: 15)
         textLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
@@ -197,7 +237,6 @@ class SliceLayer: CALayer {
         
         let degreeOfSlice: Degree = 360 / CGFloat(totalCount)
         textLayer.transform = CATransform3DMakeAffineTransform(CGAffineTransform(rotationAngle: (endAngle - degreeOfSlice / 2).toRadian()))
-        
     }
 }
 
@@ -206,7 +245,6 @@ struct SpinWheelItemModel {
     let backgroundColor: UIColor?
     let value: Int
 }
-
 
 // MARK: Degree
 typealias Radian = CGFloat

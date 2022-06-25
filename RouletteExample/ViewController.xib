@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ViewController" customModule="RouletteExample" customModuleProvider="target">
             <connections>
+                <outlet property="indexPickerView" destination="rTS-XB-e17" id="VVX-ry-OWB"/>
                 <outlet property="spinWheelView" destination="tfy-ah-FgI" id="tqV-AZ-GhT"/>
                 <outlet property="view" destination="iN0-l3-epB" id="7JF-y0-7ah"/>
             </connections>
@@ -22,7 +23,7 @@
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tfy-ah-FgI" customClass="SpinWheelView" customModule="RouletteExample" customModuleProvider="target">
                     <rect key="frame" x="57" y="298" width="300" height="300"/>
-                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <color key="backgroundColor" systemColor="systemGray4Color"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="300" id="6UE-Ub-5Vt"/>
                         <constraint firstAttribute="height" constant="300" id="hSm-5i-WK0"/>
@@ -44,23 +45,34 @@
                         <action selector="spin:" destination="-1" eventType="touchUpInside" id="gzy-8G-06g"/>
                     </connections>
                 </button>
+                <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rTS-XB-e17">
+                    <rect key="frame" x="44" y="655" width="100" height="216"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="pzh-2u-xpf"/>
+                    </constraints>
+                </pickerView>
             </subviews>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
                 <constraint firstItem="4p0-Pt-gDO" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="2od-YN-ezW"/>
+                <constraint firstItem="rTS-XB-e17" firstAttribute="centerY" secondItem="Mia-SQ-no6" secondAttribute="centerY" id="7o6-ZU-ahd"/>
                 <constraint firstItem="Mia-SQ-no6" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="LMX-VH-HMy"/>
                 <constraint firstItem="tfy-ah-FgI" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="MKg-DH-M5d"/>
                 <constraint firstItem="4p0-Pt-gDO" firstAttribute="top" secondItem="tfy-ah-FgI" secondAttribute="bottom" constant="100" id="Uet-Lg-uNc"/>
                 <constraint firstItem="Mia-SQ-no6" firstAttribute="top" secondItem="4p0-Pt-gDO" secondAttribute="bottom" constant="18" id="gWX-Nm-Zfq"/>
+                <constraint firstItem="rTS-XB-e17" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="44" id="guq-jx-02z"/>
                 <constraint firstItem="tfy-ah-FgI" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="zED-CM-B9H"/>
             </constraints>
-            <point key="canvasLocation" x="132" y="97"/>
+            <point key="canvasLocation" x="131.8840579710145" y="96.428571428571431"/>
         </view>
     </objects>
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGray4Color">
+            <color red="0.81960784313725488" green="0.81960784313725488" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
