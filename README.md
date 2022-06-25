@@ -1,4 +1,4 @@
 # RouletteExample
 * Roulette Example by Swift *
 
-<img src= ./Roulette.png width="250">
+<img src= ./Roulette.png width="500">
