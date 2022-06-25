@@ -17,9 +17,18 @@ class SpinWheelView: UIView {
         return SpinWheelLayer.self
     }
     weak var delegate: SpinWheelViewDelegate?
-    
     var spinWheelLayer: SpinWheelLayer? {
         return layer as? SpinWheelLayer
+    }
+    
+    var items: [SpinWheelItemModel] {
+        get {
+            spinWheelLayer?.items ?? []
+        }
+        set {
+            spinWheelLayer?.items = newValue
+            spinWheelLayer?.setNeedsDisplay()
+        }
     }
     
     func beginTo(_ index: Int) {
@@ -31,6 +40,7 @@ class SpinWheelView: UIView {
 
 
 class SpinWheelLayer: CALayer {
+    fileprivate(set) var items: [SpinWheelItemModel] = []
     
     override func draw(in ctx: CGContext) {
         
@@ -39,4 +49,10 @@ class SpinWheelLayer: CALayer {
 
 class SliceLayer: CALayer {
     
+}
+
+struct SpinWheelItemModel {
+    let text: String
+    let backgroundColor: UIColor?
+    let value: Int
 }
